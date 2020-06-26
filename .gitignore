@@ -1,0 +1,8 @@
+.idea/
+build/
+.gradle/
+out/
+*.iml
+*.ipr
+out/
+settings.xml
