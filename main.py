@@ -17,7 +17,6 @@ classification_file_test = "data/data_class_test.csv"
 
 # funkcja do losowego ustawienia wartości w liście, do uczenia online
 def shuffle_list(data_s, dimension):
-    print(data_s)
     if dimension == 2:
         new_data = [[], []]
         indexes = []
@@ -27,10 +26,11 @@ def shuffle_list(data_s, dimension):
         for i in range(len(data_s[0])):
             new_data[0].append(data_s[0][indexes[i]])
             new_data[1].append(data_s[1][indexes[i]])
-        print(data_s)
         data_s = new_data.copy()
-        print(data_s)
+        return data_s
 
+def steepest_descent():
+    
 
 # wczytywanie danych z csv do listy
 if mode == "regression":
@@ -42,5 +42,6 @@ if mode == "regression":
         for row in readCSV:
             data[0].append(float(row[0]))
             data[1].append(float(row[1]))
-    shuffle_list(data, 2)
-    
+    data = shuffle_list(data, 2)
+
+
