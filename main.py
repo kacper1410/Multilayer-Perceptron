@@ -1,4 +1,6 @@
 import csv
+import math
+import numpy as np
 
 # konfiguracja wstępna, parametry z jakimi uruchamiamy program
 from random import shuffle
@@ -29,8 +31,25 @@ def shuffle_list(data_s, dimension):
         data_s = new_data.copy()
         return data_s
 
+
+# narazie bez momentum ;c wybacz
 def steepest_descent():
-    
+    x = np.random.random
+
+    while math.fabs(dif_sigmoid(x)) > 0.00001:
+        #ten wsp alfa to po prostu współczynnik uczenia
+        x = x - learning_factor * dif_sigmoid(x) + momentum * 0
+
+    return x
+
+
+def sigmoid(x):
+    return 1 / float(1.0 + math.e ** ((-1.0) * x))
+
+
+def dif_sigmoid(x):
+    return sigmoid(x) * (1 - sigmoid(x))
+
 
 # wczytywanie danych z csv do listy
 if mode == "regression":
@@ -44,4 +63,13 @@ if mode == "regression":
             data[1].append(float(row[1]))
     data = shuffle_list(data, 2)
 
+    for x in data[0]:
+        # normalnie neuron wejsciowy sobie jest
+        # losujemy wage z przedziału [-1,1]
+        w = np.random.rand() * 2 + (-1)
 
+        # traktujemy x wagą i wrzucamy do sigmoidalnej
+        y = sigmoid(x * w)
+
+        # i wrzucamy sobie to do ukrytych neuronów
+        # for z in range(number_of_hidden_neurons):
