@@ -37,17 +37,17 @@ def shuffle_list(data_s, dimension):
 
 
 # narazie bez momentum ;c wybacz
-def steepest_descent():
-    x = np.random.random
+def steepest_descent(weigh, value, expected_value, x):
+    # x = np.random.random
 
-    while math.fabs(dif_sigmoid(x)) > 0.00001:
-        # ten wsp alfa to po prostu współczynnik uczenia
-        x = x - learning_factor * dif_sigmoid(x) + momentum * 0
+    # while math.fabs(dif_sigmoid(weigh, value, expected_value, x)) > 0.00001:
+    # ten wsp alfa to po prostu współczynnik uczenia
+    # x =
 
-    return x
+    return weigh - learning_factor * dif_sigmoid(value, expected_value, x) + momentum * 0
 
 
-def neuron (layer, nr, x):
+def neuron(layer, nr, x):
     return sigmoid(linear_combination(x, w[layer][nr]))
 
 
@@ -63,8 +63,8 @@ def sigmoid(x):
     return 1 / float(1.0 + math.e ** ((-1.0) * x))
 
 
-def dif_sigmoid(x):
-    return sigmoid(x) * (1 - sigmoid(x))
+def dif_sigmoid(value, expected_value, x):
+    return (value - expected_value) * (value * (1 - value)) * x
 
 
 # kombinacja liniowa, mnoży wagi przez dane wejściowe i dodaje
@@ -80,6 +80,7 @@ def initialize():
     # losujemy wagi z przedziału [-1, 1)
     def random_weight():
         return np.random.rand() * 2 + (-1)
+
     # inicjalizacja warstwy wejściowej
     for i in range(number_of_input_neurons):
         w[0].append([])
@@ -115,19 +116,30 @@ if mode == "regression":
     data = shuffle_list(data, 2)
     initialize()
 
-    for x in data[0]:
-        list_x = [x]
+    # nie moze być poprzednie, bo nie ma dostępu do y, teraz jest
+    for x in range(len(data[0])):
+        # print(data[0][x])
+        list_x = [data[0][x]]
         d = neural_network(list_x)
-        print(d)
 
-        # i wrzucamy sobie to do ukrytych neuronów
-        # for z in range(number_of_hidden_neurons):
+        # ta pętla odpowiada za no znalezienie takich wag, gdzie ten popełniany błąd jest jak najmniejszy
+        # póki co tylko dla trzeciej warstwy
+        # wywala overflow bo te dane trzeba jeszcze znormalizować chyba
+        while math.fabs(dif_sigmoid(y[2][0], data[1][x], 1)) > 0.0001:
+            # liczmy tu za kazdym razem wyjscie z nowymi wagami
+            y[2][0] = neuron(2, 0, y[1])
 
+            # nie umiem tworzyć tablicy, więc ją inicjalizuje
+            new_weighs = [0, 0, 0, 0, 0]
 
-    t1 = np.arange(-10.0, 10.0, 0.1)
-    t2 = []
-    for t in t1:
-        list_t = [t]
-        t2.append(neural_network(list_t))
-    plt.plot(t1, t2)
-    plt.show()
+            # trochę zmodyfikowałem funkcje, teraz metoda najszybszego przyjmuje wagę po której ma być liczona
+            # przyjmuje wartość z neurona
+            # przyjmuje oczekiwaną wartość
+            # przyjmuje wyjście poprzedniego neurona, czyli ten x razy, który wymnażana jest waga
+            for i in range(len(w[2][0])):
+                new_weighs[i] = steepest_descent(w[2][0][i], y[2][0], data[1][x], y[1][i])
+
+            # no i zamiana wag
+            w[2][0] = new_weighs
+
+        print(dif_sigmoid(y[2][0], data[1][x], 1))
