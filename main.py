@@ -18,6 +18,7 @@ classification_file_train = "data/data_class_train.csv"
 classification_file_test = "data/data_class_test.csv"
 # lista wag, [warstwa] [numer neuronu] [numer wagi]
 w = [[], [], []]
+y = [[], [], []]
 
 
 # funkcja do losowego ustawienia wartości w liście, do uczenia online
@@ -46,7 +47,17 @@ def steepest_descent():
     return x
 
 
-# def neuron (layer, nr,)
+def neuron (layer, nr, x):
+    return sigmoid(linear_combination(x, w[layer][nr]))
+
+
+def neural_network(x):
+    y[0][0] = neuron(0, 0, x)
+    for i in range(number_of_hidden_neurons):
+        y[1][i] = neuron(1, i, y[0])
+    y[2][0] = neuron(2, 0, y[1])
+    return y[2][0]
+
 
 def sigmoid(x):
     return 1 / float(1.0 + math.e ** ((-1.0) * x))
@@ -59,13 +70,15 @@ def dif_sigmoid(x):
 # kombinacja liniowa, mnoży wagi przez dane wejściowe i dodaje
 def linear_combination(x, w):
     combination = 0
+    print(x)
+    print(w)
     for i in range(len(x)):
         combination += x[i] * w[i]
     return combination
 
 
-# funkcja do inicjalizacji wszystkich wag
-def initialize_weights():
+# funkcja do inicjalizacji wszystkich wag i list
+def initialize():
     # losujemy wagi z przedziału [-1, 1)
     def random_weight():
         return np.random.rand() * 2 + (-1)
@@ -73,16 +86,22 @@ def initialize_weights():
     for i in range(number_of_input_neurons):
         w[0].append([])
         w[0][i].append(random_weight())
+        y[0].append(1)
+    y[0].append(1)
     # inicjalizacja warstwy ukrytej
     for i in range(number_of_hidden_neurons):
         w[1].append([])
         for j in range(number_of_input_neurons + 1):
             w[1][i].append(random_weight())
+        y[1].append(1)
+    y[1].append(1)
     # inicjalizacja warstwy wyjściowej
     for i in range(number_of_output_neurons):
         w[2].append([])
         for j in range(number_of_hidden_neurons + 1):
             w[2][i].append(random_weight())
+        y[2].append(1)
+    y[2].append(1)
 
 
 # wczytywanie danych z csv do listy
@@ -96,10 +115,12 @@ if mode == "regression":
             data[0].append(float(row[0]))
             data[1].append(float(row[1]))
     data = shuffle_list(data, 2)
-    initialize_weights()
+    initialize()
 
     for x in data[0]:
-        
+        list_x = [x]
+        d = neural_network(list_x)
+        print(d)
 
         # i wrzucamy sobie to do ukrytych neuronów
         # for z in range(number_of_hidden_neurons):
