@@ -70,8 +70,6 @@ def dif_sigmoid(x):
 # kombinacja liniowa, mnoży wagi przez dane wejściowe i dodaje
 def linear_combination(x, w):
     combination = 0
-    print(x)
-    print(w)
     for i in range(len(x)):
         combination += x[i] * w[i]
     return combination
@@ -129,6 +127,7 @@ if mode == "regression":
     t1 = np.arange(-10.0, 10.0, 0.1)
     t2 = []
     for t in t1:
-        t2.append(dif_sigmoid(t))
+        list_t = [t]
+        t2.append(neural_network(list_t))
     plt.plot(t1, t2)
     plt.show()
