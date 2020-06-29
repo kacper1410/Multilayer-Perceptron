@@ -11,6 +11,8 @@ number_of_input_neurons = 0
 number_of_output_neurons = 0
 learning_factor = 0.05
 momentum = 0
+eps = 0.0001
+
 mode = "regression"
 regression_file_train = "data/data_regr_train.csv"
 regression_file_test = "data/data_regr_test.csv"
@@ -38,14 +40,10 @@ def shuffle_list(data_s, dimension):
 
 
 # narazie bez momentum ;c wybacz
-def steepest_descent(weight, value, expected_value, x):
+def steepest_descent(weight, dif):
     # x = np.random.random
 
-    # while math.fabs(dif_sigmoid(weigh, value, expected_value, x)) > 0.00001:
-    # ten wsp alfa to po prostu współczynnik uczenia
-    # x =
-
-    return weight - learning_factor * dif_sigmoid(value, expected_value, x) + momentum * 0
+    return weight - learning_factor * dif + momentum * 0
 
 
 def neuron(layer, nr, x):
@@ -117,7 +115,7 @@ def initialize():
             w[2][i].append(random_weight())
         y[2].append(1)
         b[2].append(0)
-    y[2].append(1)
+
 
 
 # wczytywanie danych z csv do listy
@@ -131,26 +129,66 @@ if mode == "regression":
             data[0].append(float(row[0]))
             data[1].append(float(row[1]))
     data = shuffle_list(data, 2)
+    # max_y = max(data[1])
+    min_y = min(data[1])
+    if min_y < 0:
+        for i in data[1]:
+            i = i + min_y
+
     max_y = max(data[1])
-    min_y = max(data[0])
+    for i in data[1]:
+        i = i / max_y
+
+    number_of_w = number_of_input_neurons + (number_of_input_neurons + 1) * number_of_hidden_neurons + (number_of_hidden_neurons + 1) * number_of_output_neurons
     initialize()
 
     # nie moze być poprzednie, bo nie ma dostępu do y, teraz jest
     for x in range(len(data[0])):
         # print(data[0][x])
         list_x = [data[0][x]]
-        d = neural_network(list_x)
+        counter = 0
 
+        neural_network(list_x)
         # ta pętla odpowiada za no znalezienie takich wag, gdzie ten popełniany błąd jest jak najmniejszy
         # póki co tylko dla trzeciej warstwy
-        # wywala overflow bo te dane trzeba jeszcze znormalizować chyba
-        calculate_b(y[2][0], data[1][x])
-        new_weighs = w.copy()
+        # calculate_b(y[2][0], data[1][x])
+        new_w = w.copy()
+        print(str(x) + ' ' + str(data[0][x]) + ' ' + str(data[1][x]))
 
-        for i in range(number_of_output_neurons):
-            for j in range(w[2][i]):
-                while math.fabs(b[2][i] * y[1][j]) > 0.0001:
-                    new_weighs[2][i][j] = w[2][i][j]
+        while number_of_w != counter:
+            counter = 0
+            for i in range(number_of_output_neurons):
+                for j in range(len(w[2][i])):
+                    dif = y[1][j] * b[2][i]
+                    # print(str(1) + ' dif: ' + str(dif))
+                    if math.fabs(dif) > eps:
+                        new_w[2][i][j] = steepest_descent(w[2][i][j], dif)
+                    else:
+                        counter += 1
+
+            for i in range(number_of_hidden_neurons):
+                for j in range(len(w[1][i])):
+                    dif = y[0][j] * b[1][i]
+                    # print(str(2) + ' dif: ' + str(dif))
+                    if math.fabs(dif) > eps:
+                        new_w[1][i][j] = steepest_descent(w[1][i][j], dif)
+                    else:
+                        counter += 1
+                        # calculate_b(y[2][0], data[1][x])
+
+            for i in range(number_of_input_neurons):
+                for j in range(len(w[0][i])):
+                    dif = data[0][x] * b[0][i]
+                    # print(str(3) + ' dif: ' + str(dif))
+                    if math.fabs(dif) > eps:
+                        new_w[0][i][j] = steepest_descent(w[0][i][j], dif)
+                    else:
+                        counter += 1
+
+            w = new_w.copy()
+            neural_network(list_x)
+            calculate_b(y[2][0], data[1][x])
+
         #     # liczmy tu za kazdym razem wyjscie z nowymi wagami
 
 
@@ -173,6 +211,7 @@ if mode == "regression":
         list_t = [t]
         t2.append(neural_network(list_t))
     plt.plot(t1, t2)
+    
     # plt.plot(data[0], data[1], '.')
     plt.show()
 
