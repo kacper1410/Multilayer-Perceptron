@@ -42,7 +42,11 @@ def shuffle_list(data_s, dimension):
 # narazie bez momentum ;c wybacz
 def steepest_descent(weight, dif):
     # x = np.random.random
+    return weight - learning_factor * dif + momentum * 0
 
+
+def steepest_descent_out(weight, dif):
+    # x = np.random.random
     return weight - learning_factor * dif + momentum * 0
 
 
@@ -51,10 +55,11 @@ def neuron(layer, nr, x):
 
 
 def neural_network(x):
-    y[0][0] = neuron(0, 0, x)
+    y[0][0] = x[0]
     for i in range(number_of_hidden_neurons):
         y[1][i] = neuron(1, i, y[0])
-    y[2][0] = neuron(2, 0, y[1])
+    # y[2][0] = neuron(2, 0, y[1])
+    y[2][0] = linear_combination(y[1], w[2][0])
     return y[2][0]
 
 
@@ -76,7 +81,7 @@ def linear_combination(x, w):
 
 def calculate_b(value, expected_value):
     for i in range(number_of_output_neurons):
-        b[2][i] = (value - expected_value) * dif_sigmoid(value)
+        b[2][i] = (value - expected_value)
     for i in range(number_of_hidden_neurons):
         b[1][i] = 0
         for j in range(number_of_output_neurons):
@@ -130,64 +135,66 @@ if mode == "regression":
             data[1].append(float(row[1]))
     data = shuffle_list(data, 2)
 
-    min_y = min(data[1])
-    for i in range(len(data[1])):
-        data[1][i] -= min_y
-
-    max_y = max(data[1])
-    for i in range(len(data[1])):
-        data[1][i] /= max_y
+    # min_y = min(data[1])
+    # for i in range(len(data[1])):
+    #     data[1][i] -= min_y
+    #
+    # max_y = max(data[1])
+    # for i in range(len(data[1])):
+    #     data[1][i] /= max_y
 
     number_of_w = number_of_input_neurons + (number_of_input_neurons + 1) * number_of_hidden_neurons + (number_of_hidden_neurons + 1) * number_of_output_neurons
     initialize()
 
-    # nie moze być poprzednie, bo nie ma dostępu do y, teraz jest
-    for x in range(len(data[0])):
-        # print(data[0][x])
-        list_x = [data[0][x]]
-        counter = 0
+    for xyz in range(500):
+        data = shuffle_list(data, 2)
+        # nie moze być poprzednie, bo nie ma dostępu do y, teraz jest
+        for x in range(len(data[0])):
+            # print(data[0][x])
+            list_x = [data[0][x]]
+            counter = 0
 
-        neural_network(list_x)
-        calculate_b(y[2][0], data[1][x])
+            neural_network(list_x)
+            calculate_b(y[2][0], data[1][x])
 
-        print(str(x) + ' ' + str(data[0][x]) + ' ' + str(data[1][x]))
-        # print(b)
-        # print(y)
+            # print(str(x) + ' ' + str(data[0][x]) + ' ' + str(data[1][x]))
+            # print(b)
+            # print(y)
 
-        new_w = w.copy()
-        while number_of_w != counter:
+            new_w = w.copy()
+
             counter = 0
             for i in range(number_of_output_neurons):
                 for j in range(len(w[2][i])):
                     dif = y[1][j] * b[2][i]
                     # print(str(1) + ' dif: ' + str(dif))
-                    if math.fabs(dif) > eps:
-                        new_w[2][i][j] = steepest_descent(w[2][i][j], dif)
-                    else:
-                        counter += 1
+                    # if math.fabs(dif) > eps:
+                    new_w[2][i][j] = (steepest_descent(w[2][i][j], dif))
+                    # else:
+                    #     counter += 1
 
             for i in range(number_of_hidden_neurons):
                 for j in range(len(w[1][i])):
                     dif = y[0][j] * b[1][i]
                     # print(str(2) + ' dif: ' + str(dif))
-                    if math.fabs(dif) > eps:
-                        new_w[1][i][j] = steepest_descent(w[1][i][j], dif)
-                    else:
-                        counter += 1
+                    # if math.fabs(dif) > eps:
+                    new_w[1][i][j] = steepest_descent(w[1][i][j], dif)
+                    # else:
+                    #     counter += 1
                         # calculate_b(y[2][0], data[1][x])
 
-            for i in range(number_of_input_neurons):
-                for j in range(len(w[0][i])):
-                    dif = data[0][x] * b[0][i]
-                    # print(str(3) + ' dif: ' + str(dif))
-                    if math.fabs(dif) > eps:
-                        new_w[0][i][j] = steepest_descent(w[0][i][j], dif)
-                    else:
-                        counter += 1
+            # for i in range(number_of_input_neurons):
+            #     for j in range(len(w[0][i])):
+            #         dif = data[0][x] * b[0][i]
+            #         # print(str(3) + ' dif: ' + str(dif))
+            #         # if math.fabs(dif) > eps:
+            #         new_w[0][i][j] = steepest_descent(w[0][i][j], dif)
+            #         # else:
+            #         #     counter += 1
 
-            w = new_w.copy()
-            neural_network(list_x)
-            calculate_b(y[2][0], data[1][x])
+                w = new_w.copy()
+                neural_network(list_x)
+                calculate_b(y[2][0], data[1][x])
         # t1 = np.arange(-10.0, 10.0, 0.1)
         # t2 = []
         # for t in t1:
@@ -219,9 +226,9 @@ if mode == "regression":
     for t in t1:
         list_t = [t]
         t2.append(neural_network(list_t))
-    plt.plot(t1, t2)
-    
-    plt.plot(data[0], data[1], '.')
+    plt.plot(t1, t2, '-r', data[0], data[1], '.b')
+
+    # plt.scatter(data[0], data[1], marker='.')
     plt.show()
 
 
