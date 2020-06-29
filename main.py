@@ -129,15 +129,14 @@ if mode == "regression":
             data[0].append(float(row[0]))
             data[1].append(float(row[1]))
     data = shuffle_list(data, 2)
-    # max_y = max(data[1])
+
     min_y = min(data[1])
-    if min_y < 0:
-        for i in data[1]:
-            i = i + min_y
+    for i in range(len(data[1])):
+        data[1][i] -= min_y
 
     max_y = max(data[1])
-    for i in data[1]:
-        i = i / max_y
+    for i in range(len(data[1])):
+        data[1][i] /= max_y
 
     number_of_w = number_of_input_neurons + (number_of_input_neurons + 1) * number_of_hidden_neurons + (number_of_hidden_neurons + 1) * number_of_output_neurons
     initialize()
@@ -149,12 +148,13 @@ if mode == "regression":
         counter = 0
 
         neural_network(list_x)
-        # ta pętla odpowiada za no znalezienie takich wag, gdzie ten popełniany błąd jest jak najmniejszy
-        # póki co tylko dla trzeciej warstwy
-        # calculate_b(y[2][0], data[1][x])
-        new_w = w.copy()
-        print(str(x) + ' ' + str(data[0][x]) + ' ' + str(data[1][x]))
+        calculate_b(y[2][0], data[1][x])
 
+        print(str(x) + ' ' + str(data[0][x]) + ' ' + str(data[1][x]))
+        # print(b)
+        # print(y)
+
+        new_w = w.copy()
         while number_of_w != counter:
             counter = 0
             for i in range(number_of_output_neurons):
@@ -188,6 +188,15 @@ if mode == "regression":
             w = new_w.copy()
             neural_network(list_x)
             calculate_b(y[2][0], data[1][x])
+        # t1 = np.arange(-10.0, 10.0, 0.1)
+        # t2 = []
+        # for t in t1:
+        #     list_t = [t]
+        #     t2.append(neural_network(list_t))
+        # plt.plot(t1, t2)
+        #
+        # plt.plot(data[0][x], data[1][x], '.')
+        # plt.show()
 
         #     # liczmy tu za kazdym razem wyjscie z nowymi wagami
 
@@ -205,14 +214,14 @@ if mode == "regression":
         #         w[2][0] = new_weighs
         #print(dif_sigmoid(y[2][0]))
 
-    t1 = np.arange(-10.0, 10.0, 0.1)
+    t1 = np.arange(-5.0, 5.0, 0.1)
     t2 = []
     for t in t1:
         list_t = [t]
         t2.append(neural_network(list_t))
     plt.plot(t1, t2)
     
-    # plt.plot(data[0], data[1], '.')
+    plt.plot(data[0], data[1], '.')
     plt.show()
 
 
